@@ -1,0 +1,78 @@
+<misterromdescription>
+    <rotation>horizontal</rotation>
+    <name>Air Inferno (US)</name>
+    <setname>ainfernou</setname>
+    <year>1990</year>
+    <manufacturer>Taito America Corporation</manufacturer>
+    <players>1</players>
+    <rbf>TaitoAir</rbf>
+    <joystick>analog</joystick>
+    <region>US</region>
+    <!-- Assemble the DDR image directly from the unmodified MAME set. -->
+    <rom index="0" zip="ainfernou.zip|ainferno.zip" address="0x30000000" md5="none">
+        <interleave output="16">
+            <part name="c45_22.43" crc="50300926" map="01"/>
+            <part name="c45_20.14" crc="39b189d9" map="10"/>
+        </interleave>
+        <interleave output="16">
+            <part name="c45_21.42" crc="1b687241" map="01"/>
+            <part name="c45_28.13" crc="c7cd2567" map="10"/>
+        </interleave>
+        <!-- 0x80000-0xbffff is empty on this board -->
+        <part repeat="0x40000">FF</part>
+
+        <part name="c45-23.34" crc="d0750c78"/>
+
+        <interleave output="16">
+            <part name="c45-25.35" crc="c0d39f95" offset="0x0000" length="0x1000" map="01"/>
+            <part name="c45-24.6"  crc="1013d937" offset="0x0000" length="0x1000" map="10"/>
+        </interleave>
+        <part repeat="0x2e000">FF</part>
+
+        <interleave output="64">
+            <part name="c45-18.43" crc="ba7ecf3b" map="00000001"/>
+            <part name="c45-14.31" crc="481b6f29" map="00000010"/>
+            <part name="c45-17.42" crc="0dbee000" map="00000100"/>
+            <part name="c45-13.30" crc="69b82af6" map="00001000"/>
+            <part name="c45-16.41" crc="c6eb93b0" map="00010000"/>
+            <part name="c45-12.29" crc="4ae305b8" map="00100000"/>
+            <part name="c45-15.40" crc="d4610698" map="01000000"/>
+            <part name="c45-11.28" crc="d9b4b77c" map="10000000"/>
+        </interleave>
+
+        <part name="c45-01.5"  crc="052997b2"/>
+        <part name="c45-02.4"  crc="2fc0a88e"/>
+        <part name="c45-03.3"  crc="0e1e5b5f"/>
+        <part name="c45-04.2"  crc="6d081044"/>
+        <part name="c45-05.1"  crc="6c59a808"/>
+        <part name="c45-06.31" crc="6a7976d4"/>
+        <part name="c45-30.9"  crc="fa2db40f" length="0x8000"/>
+        <part repeat="0x2000">FF</part>
+    </rom>
+    <!-- The C25 program is also streamed through ioctl index 1. -->
+    <rom index="1" zip="ainfernou.zip|ainferno.zip" md5="none">
+        <interleave output="16">
+            <part name="c45-25.35" crc="c0d39f95" offset="0x0000" length="0x1000" map="01"/>
+            <part name="c45-24.6"  crc="1013d937" offset="0x0000" length="0x1000" map="10"/>
+        </interleave>
+    </rom>
+    <!-- Game select [AI-8]: 1 = Air Inferno. -->
+    <rom index="2" md5="none">
+        <part>01</part>
+    </rom>
+    <buttons names="Start,Coin,Throttle Up,Throttle Down,Fire,Lever,Pedal L,Pedal R,Handle X,Handle Y"
+             default="Start,Select,-,-,A,B,L,R,-,-" count="1"/>
+    <!-- Buttons [AI-9], [AI-11]. Test mode (SWA:3) is the core's Service
+         mode OSD option. The rudder pedals default to fitted so that the
+         Pedal L/R buttons act. -->
+    <switches default="FF,EF" base="8">
+        <dip bits="0" name="Moving Control" ids="DX Moving Only,Upright/Cockpit"/>
+        <dip bits="1" name="Motion Test Mode" ids="On,Off"/>
+        <dip bits="3" name="Demo Sounds" ids="Off,On"/>
+        <dip bits="4,5" name="Coinage" ids="4 Coins/1 Credit,3 Coins/1 Credit,2 Coins/1 Credit,1 Coin/1 Credit"/>
+        <dip bits="6,7" name="Price to Continue" ids="3 Coins/1 Credit,2 Coins/1 Credit,1 Coin/1 Credit,Same as Start"/>
+        <dip bits="8,9" name="Difficulty" ids="Hardest,Hard,Easy,Medium"/>
+        <dip bits="10,11" name="Timer Length" ids="Hardest,Hard,Easy,Medium"/>
+        <dip bits="12" name="Rudder Pedal" ids="With (Cockpit/DX),Without (Upright)"/>
+    </switches>
+</misterromdescription>

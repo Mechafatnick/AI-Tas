@@ -1,0 +1,9 @@
+Taito Air System MiSTer RTL baseline
+
+Source archive commit: e4669cc7c990f943cd3eafecc09123a4cce5bbc9
+Release reference: TaitoAir 1.0
+Target toolchain: Quartus Prime Lite 24.1std.0
+
+This repository intentionally contains the complete RTL and third-party
+sources required to build the core. No git submodule, network checkout, or
+upstream source fetch is required by the FPGA build.

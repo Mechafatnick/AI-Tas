@@ -1,0 +1,68 @@
+name: Quartus FPGA Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+
+permissions:
+  contents: read
+
+# This job deliberately runs on a self-hosted runner because Quartus Prime Lite
+# is not installed on GitHub-hosted runners. Do not run untrusted pull requests
+# on this runner.
+jobs:
+  build:
+    runs-on: [self-hosted, linux, x64, quartus-24.1]
+    timeout-minutes: 180
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Verify repository is self-contained
+        run: python3 tools/check_self_contained.py
+
+      - name: Verify Quartus toolchain
+        run: ./ci/check-quartus.sh
+
+      - name: Build TaitoAir RBF
+        run: |
+          rm -rf output_files db incremental_db
+          quartus_sh --flow compile TaitoAir
+
+      - name: Validate generated RBF
+        run: |
+          test -s output_files/TaitoAir.rbf
+          file output_files/TaitoAir.rbf || true
+          sha256sum output_files/TaitoAir.rbf
+
+      - name: Summarize Quartus reports
+        run: |
+          python3 tools/summarize_quartus_reports.py output_files || true
+
+      - name: Package MiSTer test build
+        run: |
+          rm -rf dist
+          mkdir -p dist
+          cp output_files/TaitoAir.rbf dist/TaitoAir.rbf
+          cp "releases/Top Landing (World).mra" dist/
+          cp README.md dist/README.md
+          cp UPSTREAM_BASELINE.txt dist/
+          printf 'Commit: %s\nBuild: %s\n' "$GITHUB_SHA" "$GITHUB_RUN_ID" > dist/BUILD_INFO.txt
+          (cd dist && zip -9 "../TaitoAir-MiSTer-${GITHUB_SHA}.zip" \
+            TaitoAir.rbf "Top Landing (World).mra" README.md \
+            UPSTREAM_BASELINE.txt BUILD_INFO.txt)
+
+      - name: Upload MiSTer test build
+        uses: actions/upload-artifact@v4
+        with:
+          name: TaitoAir-MiSTer-${{ github.sha }}
+          path: |
+            output_files/TaitoAir.rbf
+            output_files/*.rpt
+            output_files/*.summary
+            TaitoAir-MiSTer-${{ github.sha }}.zip
+          if-no-files-found: error
+          retention-days: 14

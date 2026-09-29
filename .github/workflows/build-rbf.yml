@@ -1,0 +1,71 @@
+# Build the Taito Air System MiSTer RBF in GitHub Actions.
+# Uses the same hosted-runner + Quartus Docker approach as other MiSTer cores.
+
+name: Build RBF
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost \
+                      /usr/local/lib/android "$AGENT_TOOLSDIRECTORY" || true
+          df -h /
+
+      - name: Verify Quartus project
+        run: |
+          echo "--- repository root ---"
+          ls -la
+          test -f TaitoAir.qpf || {
+            echo "::error::TaitoAir.qpf is missing from the repository root."
+            exit 1
+          }
+          echo "--- TaitoAir.qpf ---"
+          cat TaitoAir.qpf
+
+      - name: Pull Quartus image
+        run: docker pull raetro/quartus:mister
+
+      - name: Build Taito Air
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}":/build \
+            -w /build \
+            raetro/quartus:mister \
+            quartus_sh --flow compile TaitoAir.qpf
+
+      - name: Verify RBF
+        run: |
+          test -s output_files/TaitoAir.rbf || {
+            echo "::error::Quartus completed but output_files/TaitoAir.rbf was not produced."
+            echo "--- output_files ---"
+            ls -lah output_files/ || true
+            exit 1
+          }
+          sha256sum output_files/TaitoAir.rbf
+          ls -lh output_files/TaitoAir.rbf
+
+      - name: Upload RBF
+        uses: actions/upload-artifact@v6
+        with:
+          name: TaitoAir-rbf
+          path: output_files/TaitoAir.rbf
+
+      - name: Upload Quartus reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: TaitoAir-quartus-reports
+          path: |
+            output_files/*.rpt
+            output_files/*.summary
+          if-no-files-found: ignore
